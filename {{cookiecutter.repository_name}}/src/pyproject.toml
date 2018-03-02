@@ -1,0 +1,58 @@
+[tool.flit.metadata]
+  module="{{ cookiecutter.package_import_name }}"
+  author="{{ cookiecutter.author_fullname }}"
+  author-email="{{ cookiecutter.author_email }}"
+  home-page="https://{{ cookiecutter.repository_provider }}/{{ cookiecutter.repository_namespace }}/{{ cookiecutter.repository_name }}"
+  requires=[]
+  requires-python="3"
+  # description-file="README.rst"  # FIXME: ../README.md
+  classifiers=[
+    # http://pypi.python.org/pypi?%3Aaction=list_classifiers
+    "Intended Audience :: Developers",
+    # "License :: OSI Approved :: ISC License (ISCL)",  # FIXME
+    "Development Status :: 3 - Alpha",
+    "Operating System :: Unix",
+    "Framework :: Django",
+    "Programming Language :: Python :: 3",
+    "Topic :: Utilities",
+  ]
+
+[tool.tamtam]
+  stages=[
+    "quality",
+    "test",
+    "report"
+  ]
+
+  [tool.tamtam.quality.docs]
+    script=[
+      "sphinx-build -E -b html docs dist/docs"
+      "sphinx-build -b spelling -w /dev/null docs dist/docs"
+      "sphinx-build -b linkcheck -w /dev/null docs dist/docs"
+    ]
+
+  [tool.tamtam.quality.style]
+    script="pylint src/{{ cookiecutter.package_import_name }}"
+
+  [tool.tamtam.quality.safety]
+    script=[
+      "safety check"
+      "bandit -r src/{{ cookiecutter.package_import_name }}"
+    ]
+
+  [tool.tamtam.publish.docs]
+    script="sphinx-build -E -b html docs dist/docs"
+
+  [tool.tamtam.lint.imports]
+    script="isort -y -rc src/{{ cookiecutter.package_import_name }} tests"
+
+  [tool.tamtam.test]
+    script="pytest --cov --cov-append runtests.py tests"
+
+    [tool.tamtam.test.dependency-matrix]
+      Django=[{% for dj in cookiecutter.package_test_django_versions.split(',') %}
+        {{ dj }}
+      {% endfor %}]
+
+    [tool.tamtam.test.environment-matrix]
+      SOME_VAR=["multiple", "values"]
